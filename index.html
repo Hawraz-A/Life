@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>The Anchor</title>
+<style>
+  :root {
+    --bg-color: #050505;
+    --text-color: #d1d1d1;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body, html {
+    background-color: var(--bg-color);
+    margin: 0; padding: 0; height: 100vh; width: 100vw;
+    display: flex; justify-content: center; align-items: center;
+    cursor: pointer; overflow: hidden;
+  }
+  .text-container { width: 85%; max-width: 600px; text-align: center; }
+  .statement {
+    font-family: 'Georgia', serif; font-size: 22px; line-height: 1.6;
+    color: var(--text-color); opacity: 0; transform: translateY(10px);
+    transition: opacity 1.5s ease, transform 1.5s ease;
+  }
+  .statement.visible { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+  <div class="text-container">
+    <div class="statement" id="statementText">Tap anywhere.</div>
+  </div>
+<script>
+  let statements = { morning: [], afternoon: [], evening: [] };
+  const textElement = document.getElementById('statementText');
+  let isAnimating = false;
+
+  fetch('data.json')
+    .then(response => response.json())
+    .then(data => {
+      statements = data;
+      textElement.classList.add('visible');
+    })
+    .catch(error => {
+      textElement.textContent = "System ready. Tap to begin.";
+      textElement.classList.add('visible');
+    });
+
+  function getCategoryByTime() {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 13) return statements.morning;
+    if (hour >= 13 && hour < 18) return statements.afternoon;
+    return statements.evening;
+  }
+
+  document.body.addEventListener('click', () => {
+    if (isAnimating) return;
+    isAnimating = true;
+    textElement.classList.remove('visible');
+
+    setTimeout(() => {
+      const currentCategory = getCategoryByTime();
+      if (currentCategory && currentCategory.length > 0) {
+        const randomIndex = Math.floor(Math.random() * currentCategory.length);
+        textElement.textContent = currentCategory[randomIndex];
+      }
+      textElement.classList.add('visible');
+      isAnimating = false;
+    }, 1500);
+  });
+</script>
+</body>
+</html>
